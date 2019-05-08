@@ -1,4 +1,4 @@
-# lin-cms-tp-validate-core
+# lin-cms-tp-param-core
 LinCms TP 的反射参数中间件封装，含路由参数验证中间件，方法注释参数提取器，基于`wangyu/reflex-core`扩展
 
 # `composer`安装
