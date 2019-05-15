@@ -9,7 +9,7 @@
 namespace LinCmsTp\exception;
 
 
-class ParamException extends BaseException
+class ParamException extends \LinCmsTp5\exception\ParameterException
 {
     public $code = 400;
     public $message = '参数错误';
