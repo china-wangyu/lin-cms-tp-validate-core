@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Created by User: wene<china_wangyu@aliyun.com> Date: 2019/5/17 Time: 10:00
+ */
 
 namespace LinCmsTp;
 
@@ -48,9 +50,10 @@ class Param
     }
 
     public function setReflexParamRule(\think\Request $request):void {
-        $controller = str_replace('.',DIRECTORY_SEPARATOR,$request->controller());
+        $controller = lcfirst(str_replace('.',DIRECTORY_SEPARATOR,$request->controller()));
         $class = env('APP_NAMESPACE').DIRECTORY_SEPARATOR.$request->module().DIRECTORY_SEPARATOR.
             config('url_controller_layer').DIRECTORY_SEPARATOR.$controller;
+        $class = str_replace('/','\\',$class);
         $reflex = new Reflex($class,$request->action());
         $param = $reflex->get($this->param['name'],$this->param['rule']);
         $validate = $reflex->get($this->validate['name'],$this->validate['rule']);

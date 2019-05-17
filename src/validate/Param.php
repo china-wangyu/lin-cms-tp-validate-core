@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Created by User: wene<china_wangyu@aliyun.com> Date: 2019/5/17 Time: 10:00
+ */
 
 namespace LinCmsTp\validate;
 
@@ -26,10 +28,9 @@ class Param
         }
         $res = $validate->check($this->request->param());
         if(!$res){
-            $e = new ParamException([
+            throw new ParamException([
                 'message' => $validate->getError(),
             ]);
-            throw $e;
         }
         return true;
     }
