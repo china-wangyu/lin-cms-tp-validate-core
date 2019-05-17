@@ -72,7 +72,7 @@ class Param
         $validateFile = $this->getValidateFile($validate[0]['validateModel'],$validateFileMap);
         if ($validateFile == null) return;
         $this->rule = str_replace(env('APP_PATH'),env('APP_NAMESPACE').'/',trim($validateFile,$this->ext));
-        $this->rule = DIRECTORY_SEPARATOR.str_replace('/','\\',$this->rule);
+        $this->rule = str_replace('/','\\',$this->rule);
     }
     // 获取验证器文件
     public function getValidateFile(string $validateModel,array $validateFileMap = []):?string {
