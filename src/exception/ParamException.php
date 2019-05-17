@@ -20,7 +20,7 @@ class ParamException extends \Exception
         if(class_exists('\LinCmsTp5\exception\BaseException')){
             throw  new \LinCmsTp5\exception\BaseException([
                 'code' => $this->code,
-                'message' => $this->message,
+                'msg' => $this->message,
                 'error_code' => $this->error_code,
             ]);
         }
