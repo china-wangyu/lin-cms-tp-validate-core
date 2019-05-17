@@ -42,7 +42,14 @@ class Book
 
 ## 使用@validate('验证器的名称，不带后缀名),进行方法验证
   
-> 例如：`@validate('LoginForm') `相当于调用的`\app\api\validate\user\LoginForm`去验证
+| 名称 | 注释 | 参数1 |
+| :-: |:-:|:-:|
+| validate | 验证器类验证定义 | 验证器类名：例如**"application/api/validate/user/LoginForm"**,就写 **LoginForm** |
+
+
+
+
+- 例如：`@validate('LoginForm') `相当于调用的`\app\api\validate\user\LoginForm`去验证
     
 ```php
 /**
@@ -67,7 +74,38 @@ public function login(Request $request)
 }
 ```
 
+- 例如：`@validate('\app\api\validate\user\LoginForm') `相当于调用的`\app\api\validate\user\LoginForm`去验证
+
+> 这种方式只是为了完成某种特定的验证模型路径开发的，以`/`开头或者`\\`，都会当作验证器类的完整命名空间，不会再去目录下检测类是否存在
+
+```php
+/**
+ * 账户登陆
+ * @route('cms/user/login','post')
+ * @param Request $request
+ * @validate('\app\api\validate\user\LoginForm')
+ * @return array
+ * @throws \think\Exception
+ */
+public function login(Request $request)
+{
+    (new LoginForm())->goCheck();
+    $params = $request->post();
+
+    $user = LinUser::verify($params['nickname'], $params['password']);
+    $result = Token::getToken($user);
+
+    logger('登陆领取了令牌', $user['id'], $user['nickname']);
+
+    return $result;
+}
+```
 ## 使用@param('参数名','参数注释','参数规则')，进行单个参数验证
+
+| 名称 | 注释 | 参数1 | 参数2 | 参数3 |
+| :-: |:-:|:-:|:-:|:-:|
+| param | 参数验证器定义 | 参数名称 | 参数注释 | 参数规则 |
+
 
 > '参数规则' 对应TP的验证规则，例如：@param('id','ID','require|max:1000|min:1')
 

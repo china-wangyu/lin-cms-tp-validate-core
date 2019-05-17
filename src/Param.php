@@ -66,12 +66,16 @@ class Param
 
     // 设置@validate模式
     public function setValidateMode(array $validate):void {
-        $validate_root_path = empty(config('lin.validate_root_path')) ? $this->default_path :config('lin.validate_root_path');
-        $validateFilePath = env('APP_PATH').$validate_root_path;
-        $validateFileMap = $this->getDirPhpFile($validateFilePath);
-        $validateFile = $this->getValidateFile($validate[0]['validateModel'],$validateFileMap);
-        if ($validateFile == null) return;
-        $this->rule = str_replace(env('APP_PATH'),env('APP_NAMESPACE').'/',trim($validateFile,$this->ext));
+        if (substr($validate[0]['validateModel'],0,1) == '/' or substr($validate[0]['validateModel'],0,1) == '\\'){
+            $this->rule = $validate[0]['validateModel'];
+        }else{
+            $validate_root_path = empty(config('lin.validate_root_path')) ? $this->default_path :config('lin.validate_root_path');
+            $validateFilePath = env('APP_PATH').$validate_root_path;
+            $validateFileMap = $this->getDirPhpFile($validateFilePath);
+            $validateFile = $this->getValidateFile($validate[0]['validateModel'],$validateFileMap);
+            if ($validateFile == null) return;
+            $this->rule = str_replace(env('APP_PATH'),env('APP_NAMESPACE').'/',trim($validateFile,$this->ext));
+        }
         $this->rule = str_replace('/','\\',$this->rule);
     }
     // 获取验证器文件
