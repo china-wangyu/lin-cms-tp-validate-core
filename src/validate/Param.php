@@ -26,7 +26,7 @@ class Param
         }else{
             $validate = (new Validate())->make($this->rule,[],$this->field);
         }
-        $res = $validate->check($this->request->param());
+        $res = $validate->batch()->check($this->request->param());
         if(!$res){
             throw new ParamException([
                 'message' => $validate->getError(),
