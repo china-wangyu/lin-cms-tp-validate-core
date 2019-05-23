@@ -23,6 +23,11 @@ class Param
      */
     protected $field = [];
 
+    /**
+     * @var \think\Request $request 请求数据封装类
+     */
+    protected $request;
+
     // 设置默认路径
     protected $default_path = 'api/validate';
     // @param 模式
@@ -41,20 +46,22 @@ class Param
      */
     public function handle(\think\Request $request, \Closure $next)
     {
-        $this->setReflexParamRule($request);
-        $auth = (new Permission($this->rule,$request,$this->field))->check();
+        $this->request = $request;
+        $this->setReflexParamRule($this->request);
+        $auth = (new Permission($this->rule,$this->request,$this->field))->check();
         if (!$auth) {
             throw new ParamException();
         }
-        return $next($request);
+        return $next($this->request);
     }
 
-    public function setReflexParamRule(\think\Request $request):void {
-        $controller = lcfirst(str_replace('.',DIRECTORY_SEPARATOR,$request->controller()));
-        $class = env('APP_NAMESPACE').DIRECTORY_SEPARATOR.$request->module().DIRECTORY_SEPARATOR.
+    // 设置反射参数规则
+    public function setReflexParamRule():void {
+        $controller = lcfirst(str_replace('.',DIRECTORY_SEPARATOR,$this->request->controller()));
+        $class = env('APP_NAMESPACE').DIRECTORY_SEPARATOR.$this->request->module().DIRECTORY_SEPARATOR.
             config('url_controller_layer').DIRECTORY_SEPARATOR.$controller;
         $class = str_replace('/','\\',$class);
-        $reflex = new Reflex($class,$request->action());
+        $reflex = new Reflex($class,$this->request->action());
         $param = $reflex->get($this->param['name'],$this->param['rule']);
         $validate = $reflex->get($this->validate['name'],$this->validate['rule']);
         if (!isset($validate[0]['validateModel'])){
@@ -69,23 +76,34 @@ class Param
         if (substr($validate[0]['validateModel'],0,1) == '/' or substr($validate[0]['validateModel'],0,1) == '\\'){
             $this->rule = $validate[0]['validateModel'];
         }else{
-            $validate_root_path = empty(config('lin.validate_root_path')) ? $this->default_path :config('lin.validate_root_path');
-            $validateFilePath = env('APP_PATH').$validate_root_path;
-            $validateFileMap = $this->getDirPhpFile($validateFilePath);
+            $validateFileMap = $this->getDirPhpFile($this->getValidateRootPath());
             $validateFile = $this->getValidateFile($validate[0]['validateModel'],$validateFileMap);
             if ($validateFile == null) return;
             $this->rule = str_replace(env('APP_PATH'),env('APP_NAMESPACE').'/',trim($validateFile,$this->ext));
         }
         $this->rule = str_replace('/','\\',$this->rule);
     }
+
+    // 获取验证器默认路径。
+    private function getValidateRootPath(){
+        $validate_root_path = empty(config('lin.validate_root_path')) ? $this->default_path :config('lin.validate_root_path');
+        return env('APP_PATH').$validate_root_path;
+    }
+
     // 获取验证器文件
     public function getValidateFile(string $validateModel,array $validateFileMap = []):?string {
+        // 检测是否为分组验证器
+        $controller = strstr($this->request->controller(),'.') ? explode('.',$this->request->controller())[1]:$this->request->controller();
+        $groupValidateFile = $this->getValidateRootPath().DIRECTORY_SEPARATOR.strtolower($controller).DIRECTORY_SEPARATOR.$validateModel.$this->ext;
+        if(in_array($groupValidateFile,$validateFileMap)) return $groupValidateFile;
+        // 检测验证器目录下所有的验证器，是否有同名的验证器
         foreach ($validateFileMap as $item){
             if (strtolower(basename($item)) !== strtolower($validateModel.$this->ext)) continue;
             return $item;
         }
         return null;
     }
+
     // 获取文件夹下所有 $ext 的文件
     public function getDirPhpFile(string $dir):array {
         $validateFileMap = [];
