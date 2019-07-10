@@ -10,7 +10,7 @@ class ParamException extends \Exception
 {
     public $code = 400;
     public $message = '参数错误';
-    public $error_code = 66667;
+    public $error_code = 99999;
 
     public function __construct($params = [])
     {
