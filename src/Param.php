@@ -24,6 +24,11 @@ class Param
     protected $field = [];
 
     /**
+     * @var string Validate.item $scene 验证器场景
+     */
+    protected $scene = null;
+
+    /**
      * @var \think\Request $request 请求数据封装类
      */
     protected $request;
@@ -48,7 +53,7 @@ class Param
     {
         $this->request = $request;
         $this->setReflexParamRule($this->request);
-        $auth = (new Permission($this->rule,$this->request,$this->field))->check();
+        $auth = (new Permission($this->rule,$this->request,$this->field,$this->scene))->check();
         if (!$auth) {
             throw new ParamException();
         }
@@ -73,6 +78,12 @@ class Param
 
     // 设置@validate模式
     public function setValidateMode(array $validate):void {
+        // 设置验证器场景
+        if (strstr($validate[0]['validateModel'],'.')){
+            $this->scene = explode('.',$validate[0]['validateModel'])[1];
+        }
+
+        // 设置验证器
         if (substr($validate[0]['validateModel'],0,1) == '/' or substr($validate[0]['validateModel'],0,1) == '\\'){
             $this->rule = $validate[0]['validateModel'];
         }else{
@@ -81,6 +92,8 @@ class Param
             if ($validateFile == null) return;
             $this->rule = str_replace(env('APP_PATH'),env('APP_NAMESPACE').'/',trim($validateFile,$this->ext));
         }
+
+        // 格式化数据
         $this->rule = str_replace('/','\\',$this->rule);
     }
 
@@ -120,6 +133,7 @@ class Param
     // 设置@param模式
     public function setParamMode(array $param):void {
         foreach ($param as $item){
+            if(empty($item['rule'])) continue;
             $this->setField($item['name'],$item['doc']);
             $this->setRule($item['name'],$item['rule']);
         }
