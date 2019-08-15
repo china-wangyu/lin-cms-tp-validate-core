@@ -80,9 +80,10 @@ class Param
     public function setValidateMode(array $validate):void {
         // 设置验证器场景
         if (strstr($validate[0]['validateModel'],'.')){
-            $this->scene = explode('.',$validate[0]['validateModel'])[1];
+            $validateArr = explode('.',$validate[0]['validateModel']);
+            $this->scene = $validateArr[1];
+            $validate[0]['validateModel'] = $validateArr[0];
         }
-
         // 设置验证器
         if (substr($validate[0]['validateModel'],0,1) == '/' or substr($validate[0]['validateModel'],0,1) == '\\'){
             $this->rule = $validate[0]['validateModel'];
