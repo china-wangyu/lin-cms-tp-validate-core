@@ -85,7 +85,8 @@ class Param
             $validate[0]['validateModel'] = $validateArr[0];
         }
         // 设置验证器
-        if (substr($validate[0]['validateModel'],0,1) == '/' or substr($validate[0]['validateModel'],0,1) == '\\'){
+        if (substr($validate[0]['validateModel'],0,1) == '/'
+            or substr($validate[0]['validateModel'],0,1) == '\\'){
             $this->rule = $validate[0]['validateModel'];
         }else{
             $validateFileMap = $this->getDirPhpFile($this->getValidateRootPath());
@@ -100,7 +101,9 @@ class Param
 
     // 获取验证器默认路径。
     private function getValidateRootPath(){
-        $validate_root_path = empty(config('lin.validate_root_path')) ? $this->default_path :config('lin.validate_root_path');
+        $validate_root_path = empty(config('lin.validate_root_path'))
+            ? $this->default_path
+            : config('lin.validate_root_path');
         return env('APP_PATH').$validate_root_path;
     }
 
