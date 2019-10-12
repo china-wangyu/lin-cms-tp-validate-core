@@ -66,7 +66,7 @@ class Param
         $class = env('APP_NAMESPACE').DIRECTORY_SEPARATOR.$this->request->module().DIRECTORY_SEPARATOR.
             config('url_controller_layer').DIRECTORY_SEPARATOR.$controller;
         $class = str_replace('/','\\',$class);
-        $reflex = new Reflex($class,$this->request->action());
+        $reflex = (new Reflex(new $class))->setMethod($this->request->action());
         $param = $reflex->get($this->param['name'],$this->param['rule']);
         $validate = $reflex->get($this->validate['name'],$this->validate['rule']);
         if (!isset($validate[0]['validateModel'])){
@@ -85,7 +85,8 @@ class Param
             $validate[0]['validateModel'] = $validateArr[0];
         }
         // 设置验证器
-        if (substr($validate[0]['validateModel'],0,1) == '/' or substr($validate[0]['validateModel'],0,1) == '\\'){
+        if (substr($validate[0]['validateModel'],0,1) == '/'
+            or substr($validate[0]['validateModel'],0,1) == '\\'){
             $this->rule = $validate[0]['validateModel'];
         }else{
             $validateFileMap = $this->getDirPhpFile($this->getValidateRootPath());
@@ -100,15 +101,20 @@ class Param
 
     // 获取验证器默认路径。
     private function getValidateRootPath(){
-        $validate_root_path = empty(config('lin.validate_root_path')) ? $this->default_path :config('lin.validate_root_path');
+        $validate_root_path = empty(config('lin.validate_root_path'))
+            ? $this->default_path
+            : config('lin.validate_root_path');
         return env('APP_PATH').$validate_root_path;
     }
 
     // 获取验证器文件
     public function getValidateFile(string $validateModel,array $validateFileMap = []):?string {
         // 检测是否为分组验证器
-        $controller = strstr($this->request->controller(),'.') ? explode('.',$this->request->controller())[1]:$this->request->controller();
-        $groupValidateFile = $this->getValidateRootPath().DIRECTORY_SEPARATOR.strtolower($controller).DIRECTORY_SEPARATOR.$validateModel.$this->ext;
+        $controller = strstr($this->request->controller(),'.')
+            ? explode('.',$this->request->controller())[1]
+            : $this->request->controller();
+        $groupValidateFile = $this->getValidateRootPath().DIRECTORY_SEPARATOR
+            .strtolower($controller).DIRECTORY_SEPARATOR.$validateModel.$this->ext;
         if(in_array($groupValidateFile,$validateFileMap)) return $groupValidateFile;
         // 检测验证器目录下所有的验证器，是否有同名的验证器
         foreach ($validateFileMap as $item){
