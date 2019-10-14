@@ -33,6 +33,8 @@ class Param
      */
     protected $request;
 
+    protected $reflex;
+
     // 设置默认路径
     protected $default_path = 'api/validate';
     // @param 模式
@@ -52,25 +54,30 @@ class Param
     public function handle(\think\Request $request, \Closure $next)
     {
         $this->request = $request;
-        $this->setReflexParamRule($this->request);
-        $auth = (new Permission($this->rule,$this->request,$this->field,$this->scene))->check();
-        if (!$auth) {
-            throw new ParamException();
+        $this->setReflex();
+        $this->setReflexParamRule();
+        if (!empty($this->rule)){
+            $this->goCheck();
         }
         return $next($this->request);
     }
 
-    // 设置反射参数规则
-    public function setReflexParamRule():void {
+    // 设置参数
+    protected function setReflex():void {
         $controller = lcfirst(str_replace('.',DIRECTORY_SEPARATOR,$this->request->controller()));
         $class = env('APP_NAMESPACE').DIRECTORY_SEPARATOR.$this->request->module().DIRECTORY_SEPARATOR.
             config('url_controller_layer').DIRECTORY_SEPARATOR.$controller;
         $class = str_replace('/','\\',$class);
-        $reflex = (new Reflex(new $class))->setMethod($this->request->action());
-        $param = $reflex->get($this->param['name'],$this->param['rule']);
-        $validate = $reflex->get($this->validate['name'],$this->validate['rule']);
+        $this->reflex = (new Reflex(new $class))->setMethod($this->request->action());
+    }
+
+    // 设置反射参数规则
+    public function setReflexParamRule():void {
+        $param = $this->reflex->get($this->param['name'],$this->param['rule']);
+        $validate = $this->reflex->get($this->validate['name'],$this->validate['rule']);
+
         if (!isset($validate[0]['validateModel'])){
-            $this->setParamMode($param);
+            !empty($param) && $this->setParamMode($param);
         }else{
             $this->setValidateMode($validate);
         }
@@ -160,5 +167,13 @@ class Param
     public function setRule($key,$val)
     {
         return $this->rule[$key] = $val;
+    }
+
+
+    public function goCheck(){
+        $auth = (new Permission($this->rule,$this->request,$this->field,$this->scene))->check();
+        if (!$auth) {
+            throw new ParamException();
+        }
     }
 }
