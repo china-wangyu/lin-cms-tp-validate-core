@@ -76,7 +76,7 @@ class Param
         $param = $this->reflex->get($this->param['name'],$this->param['rule']);
         $validate = $this->reflex->get($this->validate['name'],$this->validate['rule']);
 
-        if (!isset($validate[0]['validateModel'])){
+        if (!isset($validate['validateModel'])){
             !empty($param) && $this->setParamMode($param);
         }else{
             $this->setValidateMode($validate);
@@ -86,18 +86,18 @@ class Param
     // 设置@validate模式
     public function setValidateMode(array $validate):void {
         // 设置验证器场景
-        if (strstr($validate[0]['validateModel'],'.')){
-            $validateArr = explode('.',$validate[0]['validateModel']);
+        if (strstr($validate['validateModel'],'.')){
+            $validateArr = explode('.',$validate['validateModel']);
             $this->scene = $validateArr[1];
-            $validate[0]['validateModel'] = $validateArr[0];
+            $validate['validateModel'] = $validateArr[0];
         }
         // 设置验证器
-        if (substr($validate[0]['validateModel'],0,1) == '/'
-            or substr($validate[0]['validateModel'],0,1) == '\\'){
-            $this->rule = $validate[0]['validateModel'];
+        if (substr($validate['validateModel'],0,1) == '/'
+            or substr($validate['validateModel'],0,1) == '\\'){
+            $this->rule = $validate['validateModel'];
         }else{
             $validateFileMap = $this->getDirPhpFile($this->getValidateRootPath());
-            $validateFile = $this->getValidateFile($validate[0]['validateModel'],$validateFileMap);
+            $validateFile = $this->getValidateFile($validate['validateModel'],$validateFileMap);
             if ($validateFile == null) return;
             $this->rule = str_replace(env('APP_PATH'),env('APP_NAMESPACE').'/',trim($validateFile,$this->ext));
         }
