@@ -74,30 +74,29 @@ class Param
     // 设置反射参数规则
     public function setReflexParamRule():void {
         $param = $this->reflex->get($this->param['name'],$this->param['rule']);
-        $validate = $this->reflex->get($this->validate['name'],$this->validate['rule']);
-
-        if (!isset($validate['validateModel'])){
+        $validateModel = $this->reflex->get($this->validate['name'],$this->validate['rule']);
+        if (empty($validateModel)){
             !empty($param) && $this->setParamMode($param);
         }else{
-            $this->setValidateMode($validate);
+            $this->setValidateMode($validateModel);
         }
     }
 
     // 设置@validate模式
-    public function setValidateMode(array $validate):void {
+    public function setValidateMode($validateModel):void {
         // 设置验证器场景
-        if (strstr($validate['validateModel'],'.')){
-            $validateArr = explode('.',$validate['validateModel']);
+        if (strstr($validateModel,'.')){
+            $validateArr = explode('.',$validateModel);
             $this->scene = $validateArr[1];
-            $validate['validateModel'] = $validateArr[0];
+            $validateModel = $validateArr[0];
         }
         // 设置验证器
-        if (substr($validate['validateModel'],0,1) == '/'
-            or substr($validate['validateModel'],0,1) == '\\'){
-            $this->rule = $validate['validateModel'];
+        if (substr($validateModel,0,1) == '/'
+            or substr($validateModel,0,1) == '\\'){
+            $this->rule = $validateModel;
         }else{
             $validateFileMap = $this->getDirPhpFile($this->getValidateRootPath());
-            $validateFile = $this->getValidateFile($validate['validateModel'],$validateFileMap);
+            $validateFile = $this->getValidateFile($validateModel,$validateFileMap);
             if ($validateFile == null) return;
             $this->rule = str_replace(env('APP_PATH'),env('APP_NAMESPACE').'/',trim($validateFile,$this->ext));
         }
@@ -146,6 +145,7 @@ class Param
 
     // 设置@param模式
     public function setParamMode(array $param):void {
+        !isset($param[0]) && $param = [$param];
         foreach ($param as $item){
             if(empty($item['rule'])) continue;
             $this->setField($item['name'],$item['doc']);
