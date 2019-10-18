@@ -76,7 +76,16 @@ class Param
         $param = $this->reflex->get($this->param['name'],$this->param['rule']);
         $validateModel = $this->reflex->get($this->validate['name'],$this->validate['rule']);
         if (empty($validateModel)){
-            !empty($param) && $this->setParamMode($param);
+            switch ($param){
+                case is_array($param) :
+                    return $this->setParamMode($param);
+                case is_string($param):
+                    throw new ParamException([
+                        'message' => "参数验证格式错误，请参考@param('参数名称','参数注解','参数验证规则')"
+                    ]);
+                default:
+                    return;
+            }
         }else{
             $this->setValidateMode($validateModel);
         }
